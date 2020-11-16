@@ -18,45 +18,46 @@ namespace Hunter.Control
         // Update is called once per frame
         void Update()
         {
-            InteractWithMovement();
-            InteractWithCombat();
+            if (InteractWithCombat()) return;
+            if (InteractWithMovement()) return;
+            print("Nothing to do");
 
 
         }
 
-        private void InteractWithCombat()
+        private bool InteractWithCombat()
         {
-            if (Input.GetMouseButtonDown(0))
+            RaycastHit[] hits = Physics.RaycastAll(GetMouseRay());
+            foreach (RaycastHit hit in hits)
             {
-                RaycastHit[] hits = Physics.RaycastAll(GetMouseRay());
-                foreach (RaycastHit hit in hits)
+                CombatTarget target = hit.transform.GetComponent<CombatTarget>();
+                if (target == null) continue;
+                
+                Debug.Log("Enemy");
+                if (Input.GetMouseButtonDown(0))
                 {
-                    CombatTarget target = hit.transform.GetComponent<CombatTarget>();
-                    if (target == null) continue;
                     GetComponent<Fighter>().Attack(target);
                 }
+                return true;
             }
-                
+            return false;
         }
 
 
-        private void InteractWithMovement()
-        {
-            if (Input.GetMouseButton(0))
-            {
-                CheckClickedObject();
-            }
-        }
-
-        void CheckClickedObject()
+        private bool InteractWithMovement()
         {
             RaycastHit hitInfo;
             bool hasHit = Physics.Raycast(GetMouseRay(), out hitInfo);
             if (hasHit)
             {
-                GetComponent<Mover>().MoveToCursor(hitInfo.point);
+                if (Input.GetMouseButton(0))
+                {
+                    GetComponent<Fighter>().target = null;
+                    GetComponent<Mover>().MoveToCursor(hitInfo.point);
+                }
+                return true;
             }
-            else return;
+            else return false;
         }
 
         private static Ray GetMouseRay()
