@@ -2,17 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Hunter.Movement;
-
-
-
+using Hunter.Core;
 
 namespace Hunter.Combat
 {
-    public class Fighter : MonoBehaviour
+    public class Fighter : MonoBehaviour, IAction
     {
         [SerializeField] float weaponRange = 2f;
 
-        public Transform target;
+        Transform target;
 
         private void Update()
         {
@@ -26,7 +24,7 @@ namespace Hunter.Combat
                 }
                 else
                 {
-                    GetComponent<Mover>().Stop();
+                    GetComponent<Mover>().Cancel();
                 }
             }
            
@@ -34,9 +32,16 @@ namespace Hunter.Combat
 
         public void Attack(CombatTarget combatTarget)
         {
+            GetComponent<ActionScheduler>().StartAction(this);
             target = combatTarget.transform;
             Debug.Log("I hit you, "+ combatTarget.name + "!");
         }
+
+        public void Cancel() // for IAction
+        {
+            target = null;
+        }
+
     }
 
 }

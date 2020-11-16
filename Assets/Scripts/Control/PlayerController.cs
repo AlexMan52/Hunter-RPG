@@ -52,8 +52,10 @@ namespace Hunter.Control
             {
                 if (Input.GetMouseButton(0))
                 {
-                    GetComponent<Fighter>().target = null;
-                    GetComponent<Mover>().MoveToCursor(hitInfo.point);
+                    //GetComponent<Fighter>().CancelFight(); - мой вариант как перейти от атаки врага к движению по карте, вместо StartMoving в Mover.cs
+                    //GetComponent<Mover>().MoveToCursor(hitInfo.point);
+                    GetComponent<Mover>().StartMoving(hitInfo.point);
+
                 }
                 return true;
             }
