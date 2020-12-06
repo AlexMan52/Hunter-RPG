@@ -31,10 +31,10 @@ namespace Hunter.Control
             foreach (RaycastHit hit in hits)
             {
                 CombatTarget target = hit.transform.GetComponent<CombatTarget>();
-                if (target == null) continue;
+                if (!GetComponent<Fighter>().CanAttack(target)) continue;
                 
                 Debug.Log("Enemy");
-                if (Input.GetMouseButtonDown(0))
+                if (Input.GetMouseButtonDown(1))
                 {
                     GetComponent<Fighter>().Attack(target);
                 }
@@ -50,12 +50,9 @@ namespace Hunter.Control
             bool hasHit = Physics.Raycast(GetMouseRay(), out hitInfo);
             if (hasHit)
             {
-                if (Input.GetMouseButton(0))
+                if (Input.GetMouseButton(1))
                 {
-                    //GetComponent<Fighter>().CancelFight(); - мой вариант как перейти от атаки врага к движению по карте, вместо StartMoving в Mover.cs
-                    //GetComponent<Mover>().MoveToCursor(hitInfo.point);
                     GetComponent<Mover>().StartMoving(hitInfo.point);
-
                 }
                 return true;
             }

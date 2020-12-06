@@ -12,22 +12,22 @@ namespace Hunter.Combat
         [SerializeField] float timeBetweenAttacks = 1f;
         [SerializeField] float weaponDamage = 20f;
 
-        Transform target;
+        Health target;
         float timeSinceLastAttack = 0f;
 
         private void Update()
         {
             timeSinceLastAttack += Time.deltaTime;
 
-            if (target == null) return;
+            if (target == null || target.IsDead()) return;
             else
             {
-                bool isInRange = Vector3.Distance(transform.position, target.position) > weaponRange;
-                if (isInRange)
+                bool isInRange = Vector3.Distance(transform.position, target.transform.position) < weaponRange;
+                if (!isInRange)
                 {
-                    GetComponent<Mover>().MoveToCursor(target.position);
+                    GetComponent<Mover>().MoveToCursor(target.transform.position);
                 }
-                else
+                else 
                 {
                     GetComponent<Mover>().Cancel();
                     AttackBehaviour();
@@ -36,35 +36,58 @@ namespace Hunter.Combat
            
         }
 
+        public bool CanAttack(CombatTarget combatTarget)
+        {
+            if (combatTarget == null) return false;
+            Health targetToTest = combatTarget.GetComponent<Health>();
+            return targetToTest != null && !targetToTest.IsDead();
+        }
+
         private void AttackBehaviour()
         {
             if (timeSinceLastAttack > timeBetweenAttacks)
             {
+                transform.LookAt(target.transform);
+
                 //this will trigger Hit() event in animation
-                GetComponent<Animator>().SetTrigger("attack");
+                TriggerAttack();
                 timeSinceLastAttack = 0f;
             }
         }
 
+        private void TriggerAttack()
+        {
+            GetComponent<Animator>().ResetTrigger("stopAttacking");
+            GetComponent<Animator>().SetTrigger("attack");
+        }
+
         void Hit() //Animation Event on Player
         {
-            target.GetComponent<Health>().TakeDamage(weaponDamage);
+            if (target == null) return;
+            target.TakeDamage(weaponDamage);
         }
 
         public void Attack(CombatTarget combatTarget)
         {
             GetComponent<ActionScheduler>().StartAction(this);
-            target = combatTarget.transform;
+            target = combatTarget.GetComponent<Health>();
             
             Debug.Log("I'm gonna hit you, "+ combatTarget.name + "!");
+            
         }
 
         public void Cancel() // for IAction
         {
+            TriggerStopAttacking();
             target = null;
         }
 
-        
+        private void TriggerStopAttacking()
+        {
+            GetComponent<Animator>().ResetTrigger("attack");
+            GetComponent<Animator>().SetTrigger("stopAttacking");
+        }
+
 
     }
 
